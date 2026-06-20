@@ -1,0 +1,3 @@
+/home/sashka/Github/CThingie/build/CMakeFiles/MyProjectExecutable.dir
+/home/sashka/Github/CThingie/build/CMakeFiles/edit_cache.dir
+/home/sashka/Github/CThingie/build/CMakeFiles/rebuild_cache.dir

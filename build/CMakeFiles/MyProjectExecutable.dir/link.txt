@@ -1,0 +1,1 @@
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/MyProjectExecutable.dir/link.d CMakeFiles/MyProjectExecutable.dir/program.c.o CMakeFiles/MyProjectExecutable.dir/Transpiler/Lexer/Lexer.c.o CMakeFiles/MyProjectExecutable.dir/Transpiler/Parser/Parser.c.o CMakeFiles/MyProjectExecutable.dir/Transpiler/Generator/Generator.c.o -o MyProjectExecutable

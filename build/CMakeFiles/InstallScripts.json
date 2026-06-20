@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/sashka/Github/CThingie/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
