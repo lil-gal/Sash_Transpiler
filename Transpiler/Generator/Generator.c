@@ -54,7 +54,9 @@ void writeArguments(char *line, Node node){
         char argument[256];
         argument[0] = '\0';
         
-        handleVarOrType(argument, *node.arguments[i]);        
+        handleNodeType(argument, *node.arguments[i]);
+        //printf("");
+        //handleVarOrType(argument, *node.arguments[i]);        
 
 
         //strcpy(argument, node.arguments[i]->value.Value);
@@ -262,7 +264,8 @@ void writeValues(char* line, Node node){
         
 }
 void writeValue(char* line, Node node){
-    strcats(line, node.tokenType.Value);
+    //strcats(line, node.tokenType.Value);
+    handleVarOrType(line, node);
 }
 
 void handleKeywords(char* line, Node node){
