@@ -31,9 +31,9 @@ int main() {
     
 
     Token *tokens = ToTokens(readText); 
-    
+    printf("Going on to nodes\n");    
     Node *nodes = toNodes(tokens);
-    
+    printf("Going on to genning\n");
     char *code = generateCode(nodes);
     
     //printf("%s\n", code);

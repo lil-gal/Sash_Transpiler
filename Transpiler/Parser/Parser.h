@@ -5,8 +5,9 @@
 #include "../Lexer/Lexer.h"
 
 typedef enum {
-    VARIABLE,
+    VALUE,
     ASSIGN_VARIABLE,
+    DEFINE,
     DEFINE_VARIABLE,
     FUNCTION_CREATE,
     FUNCTION_CALL,
@@ -22,7 +23,7 @@ typedef struct Node{
     int bodyCount;
     NodeType type;
     Token tokenType;
-    Token value[64];
+    struct Node** value;
     int valueCount;
 } Node;
 

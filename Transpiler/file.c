@@ -4,8 +4,14 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "methods.h"
-bool test = 10 != 10;
-
+int add(int a,int b);
+int x = 0;
 void main(){
-println( test);
+int y = 2;
+println( x);
 }
+
+int add(int a,int b){
+return a + b;
+}
+

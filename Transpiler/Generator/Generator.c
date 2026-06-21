@@ -25,7 +25,7 @@ void handleDefineType(char *line, Node node);
 
 char includings[256] = "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n#include <ctype.h>\n#include \"methods.h\"\n\0";
 char methodsDeclaration[256] = ""; 
-char methodsCreated[256] = "";
+//char methodsCreated[256] = "";
 
 char mainStart[24]= "int main(){\n\0";
 char mainEnd[24] = "\nreturn 0;}\n\0";
@@ -38,7 +38,7 @@ void handleFunctionCall(char *line, Node node){
     
     writeArguments(write, node);
 
-    strcpy(line, write);
+    strcat(line, write);
     
 
 }
@@ -49,6 +49,7 @@ void writeArguments(char *line, Node node){
 
     char arguments[256];
     arguments[0] = '\0';
+    
     for(int i = 0; i < node.argumentCount; i++){
         char argument[256];
         argument[0] = '\0';
@@ -122,12 +123,13 @@ void handleVariable(char *line, Node node){
     strcats(line, node.name);
 }
 
+
 void handleTypes(char *line, Node node){
     for(int i = 0; i < node.valueCount; i++){
-        if(node.value[i].Type == STRING){
-            handleString(line, node.value[i]);
+        if(node.value[i]->tokenType.Type == STRING){
+            handleString(line, node.value[i]->tokenType);
         }else{
-            strcats(line, node.value[i].Value);
+            strcats(line, node.value[i]->tokenType.Value);
         }
     }
 }
@@ -144,11 +146,12 @@ void handleDefineVariable(char *line, Node node){
     c[0] = '\0';
 
     handleDefineType(c, node);
+    //printf("here. right? %s\n", node.name);
 
     
     strcats(c, "=");                       // = 
 
-    handleTypes(c, node);
+    writeValues(c, node);
     
     
     strcpy(line, c); 
@@ -245,23 +248,21 @@ void handleFunctionCreate(char *line, Node node){
     strcat(body, "}\n");
     strcat(c, body);
 
-    strcat(methodsCreated, c);
+    strcat(line, c);
 
     //strcat(line, c);
 }
 
 void writeValues(char* line, Node node){
     for(int i = 0; i < node.valueCount; i++){
-        if(node.value[i].Type == STRING){
-            char c[256];
-            c[0] = '\0';
-            sprintf(c, "\"%s\"", node.value[i].Value);
-            strcats(line, c);
-        }else{
-            strcats(line, node.value[i].Value);
-        }
-    }
+        handleNodeType(line, *node.value[i]);
         
+    }
+    printf("\n");
+        
+}
+void writeValue(char* line, Node node){
+    strcats(line, node.tokenType.Value);
 }
 
 void handleKeywords(char* line, Node node){
@@ -276,6 +277,7 @@ void handleKeywords(char* line, Node node){
 void handleNodeType(char* line, Node node){
     NodeType type = node.type;
          if(type == FUNCTION_CALL)       { handleFunctionCall(line,   node); }
+    else if(type == VALUE)               { writeValue(line, node);           }
     else if(type == DEFINE_VARIABLE)     { handleDefineVariable(line, node); }
     else if(type == ASSIGN_VARIABLE)     { handleAssignVariable(line, node); }
     else if(type == FUNCTION_CREATE)     { handleFunctionCreate(line, node); }
@@ -321,7 +323,7 @@ char* generateCode(Node nodes[]) {
     strcat(fileText, includings);
     strcat(fileText, methodsDeclaration);  // forward declarations first
     strcat(fileText, code);                // then main()
-    strcat(fileText, methodsCreated);      // then function bodies
+    //strcat(fileText, methodsCreated);      // then function bodies
 
     free(code);
     return fileText;

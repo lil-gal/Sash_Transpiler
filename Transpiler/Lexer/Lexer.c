@@ -169,6 +169,7 @@ Token toToken(char ch[], int *index){
         else if(c == '/' || c == '*')       { shouldEnd = true; }
         else if(c == '-' || c == '+')       { shouldEnd = true; }
         else if(c == '=' || c == '!')       { shouldEnd = true; }
+        else if(c == "\n")                  { shouldEnd = true; }
 
 
         if(shouldEnd) {

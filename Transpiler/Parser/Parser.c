@@ -7,9 +7,27 @@
 #include "Parser.h"
 
 
+Node createNode() {
+    Node n = {0};
+    strcpy(n.name, "\0");
+    n.value     = malloc(sizeof(Node*) * 256);
+    n.arguments = malloc(sizeof(Node*) * 256);
+    n.body      = malloc(sizeof(Node*) * 256);
+    return n;
+}
+
+void assingValue(Node *n, Token self){
+    Node node = createNode();
+    node.type = VALUE;
+    node.tokenType = self;
+    strcpy(node.name, self.Value);
+    n->value[n->valueCount] = malloc(sizeof(Node));
+    *n->value[n->valueCount] = node;
+    n->valueCount++;
+}
 
 Node readNode(Token tokens[], int *index){
-    Node n = {};
+    Node n = createNode();
 
     
     TokenType type = tokens[*index].Type;
@@ -21,9 +39,10 @@ Node readNode(Token tokens[], int *index){
             strcpy(n.name, tokens[*index].Value);
             n.type = KEYWORD_NODE;
         }
-        else if(type == TYPE)                                           { n.type = DEFINE_VARIABLE; n.tokenType = tokens[*index];}
-        else if(type == OPEN_PARENTHESIS || type == CLOSED_PARENTHESIS) { n.type = FUNCTION_CALL;
-            
+        else if(type == TYPE)                                           { n.type = DEFINE; n.tokenType = tokens[*index];}
+        else if(type == OPEN_PARENTHESIS || type == CLOSED_PARENTHESIS) { 
+            //printf("0-%s -\t",n.name);
+            Node tempNode = n; 
             Node** nodes = malloc(sizeof(Node*) * 256);
 
             (*index)++;
@@ -45,12 +64,29 @@ Node readNode(Token tokens[], int *index){
 
                 nodes[i] = node;    
                 
-                n.argumentCount = i+1;
+                tempNode.argumentCount = i+1;
                 
                 i++;
                 //(*index)++;
             }
-            n.arguments = nodes;
+            tempNode.type = FUNCTION_CALL;
+            tempNode.arguments = nodes;
+            
+            if(n.type != ASSIGN_VARIABLE && n.type != DEFINE_VARIABLE){
+                n.type = FUNCTION_CALL;
+                n.arguments = nodes;
+                n.argumentCount = i;
+            }else{
+                n.valueCount--; //rewrites the identifier...
+                strcpy(tempNode.name, n.value[n.valueCount]->name);
+                n.value[n.valueCount] = malloc(sizeof(Node));
+                *n.value[n.valueCount] = tempNode;
+                
+                n.valueCount++;
+
+
+                //printf("%d\n", n.valueCount);
+            }
 
         }
         else if(type == OPEN_CURLIES || type == CLOSED_CURLIES)         { 
@@ -92,25 +128,31 @@ Node readNode(Token tokens[], int *index){
             if(strlen(n.name) == 0 ){
                 strcpy(n.name, tokens[*index].Value);
             }else{
-                n.value[n.valueCount] = tokens[*index];
-                n.valueCount++;
+                //printf("identifier print - %s\n", n.name);
+                assingValue(&n, tokens[*index]);
             }
-            if(n.type != DEFINE_VARIABLE && n.type != KEYWORD_NODE && n.type != ASSIGN_VARIABLE) {
-                n.type = VARIABLE;
+
+            if(n.type != DEFINE && n.type != DEFINE_VARIABLE && n.type != KEYWORD_NODE && n.type != ASSIGN_VARIABLE) {
+                n.type = VALUE; //temporary?
             }
                 
         }
-        else if(type == STRING)                                         { n.value[n.valueCount] = tokens[*index]; n.valueCount++; }
-        else if(type == NUMBER)                                         { n.value[n.valueCount] = tokens[*index]; n.valueCount++; }
-        else if(type == BOOL)                                           { n.value[n.valueCount] = tokens[*index]; n.valueCount++; }
-        else if(type == EQUALS)                                         { if(n.type != DEFINE_VARIABLE ) n.type = ASSIGN_VARIABLE;}
+        else if(type == STRING)                                         { assingValue(&n, tokens[*index]); }
+        else if(type == NUMBER)                                         { assingValue(&n, tokens[*index]); }
+        else if(type == BOOL)                                           { assingValue(&n, tokens[*index]); }
+        else if(type == EQUALS)                                         { 
+            if(n.type != DEFINE) {n.type = ASSIGN_VARIABLE;}
+            else                 n.type = DEFINE_VARIABLE;
+
+        }
         else if(type == OPERATOR)                                       {
-            n.value[n.valueCount] = tokens[*index]; n.valueCount++;
+            assingValue(&n, tokens[*index]);
         }
         
         (*index)++;
         type = tokens[*index].Type;
     }
+
     
     return n;
 
