@@ -8,7 +8,7 @@
 #include "Lexer.h"
 
 bool isNumber(char ch[]){
-    for (int i = 0; i < strlen(ch); i++) {
+    for (int i = 0; ch[i] != '\0'; i++) {
         if(!isdigit(ch[i])) { return false; }
     }
     return true;
@@ -26,20 +26,11 @@ bool isKeyword(char ch[]){
     return false;
 }
 
-
-Token toToken(char ch[], int *index){
-    
-    //END OF FILE
-    if(*index >= strlen(ch)) {
-        Token t = {END_OF_FILE_TOKEN, ""};
-        return t; 
-    }
-
-
+Token checkOutside(char ch[], int *index){
     char firstchar = ch[*index];
     
 
-    //IF SPACE
+    //IF SPACE OR NEWLINE
     if(firstchar == ' ' || firstchar == '\n') {
         (*index)++;
         return toToken(ch, index); 
@@ -56,7 +47,7 @@ Token toToken(char ch[], int *index){
             i++;
         }
         (*index)++; 
-        Token t = {STRING, ""};
+        Token t = {TOKEN_STRING, ""};
         strcpy(t.Value, strWord);
         return t;
     }
@@ -64,7 +55,7 @@ Token toToken(char ch[], int *index){
     //SEMICOLON
     if(firstchar == ';'){
         (*index)++;
-        Token t = {END_OF_LINE, ";"};
+        Token t = {TOKEN_END_OF_LINE, ";"};
         return t;
     }
 
@@ -84,7 +75,7 @@ Token toToken(char ch[], int *index){
     for(int i = 0; i < sizeof(operators); i++){
         if(firstchar == operators[i]){
             (*index)++;
-            Token t = {OPERATOR, ""};
+            Token t = {TOKEN_OPERATOR, ""};
             char val[2] = {firstchar, '\0'};
             strcpy(t.Value, val);
             return t;
@@ -100,10 +91,10 @@ Token toToken(char ch[], int *index){
     //EQUALS SIGN
     if(firstchar == '='){
         (*index)++;
-        Token t = {EQUALS, "="};
+        Token t = {TOKEN_EQUALS, "="};
         if(ch[*index] == '='){
             (*index)++;
-            t.Type = OPERATOR;
+            t.Type = TOKEN_OPERATOR;
             strcpy(t.Value, "==");
         }
         return t;
@@ -112,19 +103,19 @@ Token toToken(char ch[], int *index){
     //EXCLAMATION MARK
     if(firstchar == '!'){
         (*index)++;
-        Token t = {OPERATOR, "!"};
+        Token t = {TOKEN_OPERATOR, "!"};
         if(ch[*index] == '='){
             (*index)++;
-            t.Type = OPERATOR;
+            t.Type = TOKEN_OPERATOR;
             strcpy(t.Value, "!=");
         }
         return t;
     }
 
-    //COMMA
+    //TOKEN_COMMA
     if(firstchar == ','){
         (*index)++;
-        Token t = {COMMA, ","};
+        Token t = {TOKEN_COMMA, ","};
         return t;
     }
 
@@ -133,14 +124,14 @@ Token toToken(char ch[], int *index){
     //braces
     char braces[] = {'(', ')', '{', '}'};
     for(int i = 0; i < sizeof(braces); i++){
-        Token t = {OPEN_PARENTHESIS, ""};
+        Token t = {TOKEN_OPEN_PARENTHESIS, ""};
         char b = braces[i];
 
         if(firstchar == b){
-            if(b == '(')            { t.Type = OPEN_PARENTHESIS; }
-            else if(b == ')')       { t.Type = CLOSED_PARENTHESIS; }
-            else if(b == '{')       { t.Type = OPEN_CURLIES; }
-            else if(b == '}')       { t.Type = CLOSED_CURLIES; }
+            if(b == '(')            { t.Type = TOKEN_OPEN_PARENTHESIS; }
+            else if(b == ')')       { t.Type = TOKEN_CLOSED_PARENTHESIS; }
+            else if(b == '{')       { t.Type = TOKEN_OPEN_CURLIES; }
+            else if(b == '}')       { t.Type = TOKEN_CLOSED_CURLIES; }
             (*index)++;
             char val[2] = {firstchar, '\0'};
             strcpy(t.Value, val);
@@ -148,56 +139,90 @@ Token toToken(char ch[], int *index){
         }
     }
 
+    printf("ended without returning. Lexer - checkOutside");
+}
+
+bool shouldEndFn(char c){
+    bool shouldEnd = false;
     
+    // block of bad characters :(
+    if(c == ' ' || c == '\0')           { shouldEnd = true; }
+    else if(c == '(' || c == '{')       { shouldEnd = true; }
+    else if(c == ')' || c == '}')       { shouldEnd = true; }
+    else if(c == ';')                   { shouldEnd = true; }
+    else if(c == ',')                   { shouldEnd = true; }
+    else if(c == '/' || c == '*')       { shouldEnd = true; }
+    else if(c == '-' || c == '+')       { shouldEnd = true; }
+    else if(c == '=' || c == '!')       { shouldEnd = true; }
+    else if(c == '\n')                  { shouldEnd = true; }
 
+    return shouldEnd;
+}
 
+void changeType(char currWord[], Token *t){
+
+         if(strcmp(currWord, "int") == 0)     { t->Type = TOKEN_TYPE; }
+    else if(strcmp(currWord, "string") == 0)  { t->Type = TOKEN_TYPE; }
+    else if(strcmp(currWord, "char") == 0)    { t->Type = TOKEN_TYPE; }
+    else if(strcmp(currWord, "bool") == 0)    { t->Type = TOKEN_TYPE; }
+    else if(strcmp(currWord, "void") == 0)    { t->Type = TOKEN_TYPE; }
+    else if(strcmp(currWord, "true") == 0)    { t->Type = TOKEN_BOOL; }
+    else if(strcmp(currWord, "false") == 0)   { t->Type = TOKEN_BOOL; }
+    else if(isNumber(currWord))               { t->Type = TOKEN_NUMBER;  }
+    else if(isKeyword(currWord))              { t->Type = TOKEN_KEYWORD; }
+    //else                                      { t.Type = IDENTIFIER; }
+
+}
+
+Token toToken(char ch[], int *index){
+    
+    //END OF FILE
+    if(*index >= strlen(ch)) {
+        Token t = {TOKEN_END_OF_FILE, ""};
+        return t; 
+    }
+
+    if(shouldEndFn(ch[*index])){
+        return checkOutside(ch, index);
+    }
 
     int startIndex = *index;
     int currIndex = *index;
-    char currWord[64] = "";
+    
+    int capacity = 16;
+    char *currWord = calloc(capacity, sizeof(char));
 
     while(true){
-        char c = ch[currIndex]; 
-        
+        bool shouldEnd = shouldEndFn(ch[currIndex]);
 
-        bool shouldEnd = false;
-        if(c == ' ' || c == '\0')           { shouldEnd = true; }
-        else if(c == '(' || c == '{')       { shouldEnd = true; }
-        else if(c == ')' || c == '}')       { shouldEnd = true; }
-        else if(c == ';')                   { shouldEnd = true; }
-        else if(c == ',')                   { shouldEnd = true; }
-        else if(c == '/' || c == '*')       { shouldEnd = true; }
-        else if(c == '-' || c == '+')       { shouldEnd = true; }
-        else if(c == '=' || c == '!')       { shouldEnd = true; }
-        else if(c == '\n')                  { shouldEnd = true; }
-
+        int len = currIndex - startIndex;
 
         if(shouldEnd) {
-            Token t = {IDENTIFIER, ""};
+            currWord[len] = '\0';   
 
-            //block timeee
+            Token t = {TOKEN_IDENTIFIER, ""};
 
-            if(strcmp(currWord, "int") == 0)          { t.Type = TYPE; }
-            else if(strcmp(currWord, "string") == 0)  { t.Type = TYPE; }
-            else if(strcmp(currWord, "char") == 0)    { t.Type = TYPE; }
-            else if(strcmp(currWord, "bool") == 0)    { t.Type = TYPE; }
-            else if(strcmp(currWord, "void") == 0)    { t.Type = TYPE; }
-            else if(strcmp(currWord, "true") == 0)    { t.Type = BOOL; }
-            else if(strcmp(currWord, "false") == 0)   { t.Type = BOOL; }
-            else if(isNumber(currWord))               { t.Type = NUMBER;  }
-            else if(isKeyword(currWord))              { t.Type = KEYWORD; }
-            //else                                      { t.Type = IDENTIFIER; }
-
-
-
+            changeType(currWord, &t);
             strcpy(t.Value, currWord);
+
             *index = currIndex;
+
+            free(currWord);
             return t;
         }
 
-
         currWord[currIndex - startIndex] = ch[currIndex];
-        //currWord[currIndex - startIndex] = '\0';
+        
+        if(len >= capacity-1){
+            capacity *= 2;
+            
+            char *tmp = realloc(currWord, capacity);
+            if (!tmp) {
+                free(currWord);
+                exit(EXIT_FAILURE);
+            }
+            currWord = tmp;
+        }
         currIndex++;
     }
 }
@@ -205,14 +230,21 @@ Token toToken(char ch[], int *index){
 
 Token* ToTokens(char ch[]){
     int index = 0;
-    Token *tokens = malloc(sizeof(Token) * 256);
+    int capacity = 256;
 
+    Token *tokens = malloc(sizeof(Token) * capacity);
+    
     int i = 0;
-
+    
     while(true){
+        if(i >= capacity){
+            capacity *= 2;
+            tokens = realloc(tokens, sizeof(Token) * capacity);
+        }
+
         tokens[i] = toToken(ch, &index);
         
-        if(tokens[i].Type == END_OF_FILE_TOKEN){
+        if(tokens[i].Type == TOKEN_END_OF_FILE){
             break;
         }
 

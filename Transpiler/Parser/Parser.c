@@ -18,7 +18,7 @@ Node createNode() {
 
 void assingValue(Node *n, Token self){
     Node node = createNode();
-    node.type = VALUE;
+    node.type = NODE_VALUE;
     node.tokenType = self;
     strcpy(node.name, self.Value);
     n->value[n->valueCount] = malloc(sizeof(Node));
@@ -33,14 +33,14 @@ Node readNode(Token tokens[], int *index){
     TokenType type = tokens[*index].Type;
     //bool isKeyPart = false; //|| isKeyPart
     
-    while(type != END_OF_LINE && type != END_OF_FILE_TOKEN && type != CLOSED_PARENTHESIS && type != CLOSED_CURLIES && type != COMMA){
+    while(type != TOKEN_END_OF_LINE && type != TOKEN_END_OF_FILE && type != TOKEN_CLOSED_PARENTHESIS && type != TOKEN_CLOSED_CURLIES && type != TOKEN_COMMA){
 
-        if(type == KEYWORD)                                             {
+        if(type == TOKEN_KEYWORD)                                             {
             strcpy(n.name, tokens[*index].Value);
-            n.type = KEYWORD_NODE;
+            n.type = NODE_KEYWORD;
         }
-        else if(type == TYPE)                                           { n.type = DEFINE; n.tokenType = tokens[*index];}
-        else if(type == OPEN_PARENTHESIS || type == CLOSED_PARENTHESIS) { 
+        else if(type == TOKEN_TYPE)                                           { n.type = NODE_DEFINE; n.tokenType = tokens[*index];}
+        else if(type == TOKEN_OPEN_PARENTHESIS || type == TOKEN_CLOSED_PARENTHESIS) { 
             //printf("0-%s -\t",n.name);
             Node tempNode = n; 
             Node** nodes = malloc(sizeof(Node*) * 256);
@@ -50,13 +50,13 @@ Node readNode(Token tokens[], int *index){
             
             int i = 0; 
             
-            while(type != CLOSED_PARENTHESIS){
+            while(type != TOKEN_CLOSED_PARENTHESIS){
                 Node *node = malloc(sizeof(Node));
                 *node = readNode(tokens, index);
                 
                 type = tokens[*index].Type;
                 
-                if(type == COMMA){
+                if(type == TOKEN_COMMA){
                     //printf("COMMAAA\n");
                     (*index)++;
                     type = tokens[*index].Type;
@@ -69,11 +69,11 @@ Node readNode(Token tokens[], int *index){
                 i++;
                 //(*index)++;
             }
-            tempNode.type = FUNCTION_CALL;
+            tempNode.type = NODE_FUNCTION_CALL;
             tempNode.arguments = nodes;
             
-            if(n.type != ASSIGN_VARIABLE && n.type != DEFINE_VARIABLE){
-                n.type = FUNCTION_CALL;
+            if(n.type != NODE_ASSIGN_VARIABLE && n.type != NODE_DEFINE_VARIABLE){
+                n.type = NODE_FUNCTION_CALL;
                 n.arguments = nodes;
                 n.argumentCount = i;
             }else{
@@ -89,9 +89,9 @@ Node readNode(Token tokens[], int *index){
             }
 
         }
-        else if(type == OPEN_CURLIES || type == CLOSED_CURLIES)         { 
-            if(n.type == FUNCTION_CALL) { n.type = FUNCTION_CREATE; }
-            n.type = FUNCTION_CREATE;
+        else if(type == TOKEN_OPEN_CURLIES || type == TOKEN_CLOSED_CURLIES)         { 
+            if(n.type == NODE_FUNCTION_CALL) { n.type = NODE_FUNCTION_CREATE; }
+            n.type = NODE_FUNCTION_CREATE;
             Node** nodes = malloc(sizeof(Node*) * 256);
 
             (*index)++;
@@ -99,14 +99,14 @@ Node readNode(Token tokens[], int *index){
             
             int i = 0; 
 
-            while(type != CLOSED_CURLIES){
+            while(type != TOKEN_CLOSED_CURLIES){
 
                 Node *node = malloc(sizeof(Node));
                 *node = readNode(tokens, index);
                 
                 type = tokens[*index].Type;
                 
-                if(type == END_OF_LINE){
+                if(type == TOKEN_END_OF_LINE){
                     (*index)++;
                     type = tokens[*index].Type;
                 }
@@ -124,7 +124,7 @@ Node readNode(Token tokens[], int *index){
             (*index)++;
             return n;
         }
-        else if(type == IDENTIFIER)                                     {
+        else if(type == TOKEN_IDENTIFIER)                                     {
             if(strlen(n.name) == 0 ){
                 strcpy(n.name, tokens[*index].Value);
             }else{
@@ -132,20 +132,20 @@ Node readNode(Token tokens[], int *index){
                 assingValue(&n, tokens[*index]);
             }
 
-            if(n.type != DEFINE && n.type != DEFINE_VARIABLE && n.type != KEYWORD_NODE && n.type != ASSIGN_VARIABLE) {
-                n.type = VALUE; //temporary?
+            if(n.type != NODE_DEFINE && n.type != NODE_DEFINE_VARIABLE && n.type != NODE_KEYWORD && n.type != NODE_ASSIGN_VARIABLE) {
+                n.type = NODE_VALUE; //temporary?
             }
                 
         }
-        else if(type == STRING)                                         { assingValue(&n, tokens[*index]); }
-        else if(type == NUMBER)                                         { assingValue(&n, tokens[*index]); }
-        else if(type == BOOL)                                           { assingValue(&n, tokens[*index]); }
-        else if(type == EQUALS)                                         { 
-            if(n.type != DEFINE) {n.type = ASSIGN_VARIABLE;}
-            else                 n.type = DEFINE_VARIABLE;
+        else if(type == TOKEN_STRING)                                         { assingValue(&n, tokens[*index]); }
+        else if(type == TOKEN_NUMBER)                                         { assingValue(&n, tokens[*index]); }
+        else if(type == TOKEN_BOOL)                                           { assingValue(&n, tokens[*index]); }
+        else if(type == TOKEN_EQUALS)                                         { 
+            if(n.type != NODE_DEFINE) {n.type = NODE_ASSIGN_VARIABLE;}
+            else                 n.type = NODE_DEFINE_VARIABLE;
 
         }
-        else if(type == OPERATOR)                                       {
+        else if(type == TOKEN_OPERATOR)                                       {
             assingValue(&n, tokens[*index]);
         }
         
@@ -165,13 +165,13 @@ Node* toNodes(Token tokens[]){
     int i = 0;
     while(true){
         // skip semicolons between statements
-        if(tokens[index].Type == END_OF_LINE){
+        if(tokens[index].Type == TOKEN_END_OF_LINE){
             index++;
         }
 
-        if(tokens[index].Type == END_OF_FILE_TOKEN){
+        if(tokens[index].Type == TOKEN_END_OF_FILE){
             Node n;
-            n.type = END_OF_FILE_NODE;
+            n.type = NODE_END_OF_FILE;
             nodes[i] = n;
             break;
         }

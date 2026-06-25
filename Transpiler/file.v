@@ -1,6 +1,6 @@
 void main(){
-    int y = add(add(1,2),2);
-    println(y);
+    int somethingwithareallylongtimethatyouprobablywouldneverevertypeisthisenoughihopesohahahahahha = 0;
+    println(somethingwithareallylongtimethatyouprobablywouldneverevertypeisthisenoughihopesohahahahahha);
     
 }
 

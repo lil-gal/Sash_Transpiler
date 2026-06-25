@@ -2,8 +2,7 @@
 #include <stdlib.h> 
 #include "Transpiler/Generator/Generator.h"
 
-char *typeNames[] = {"Keyword", "TYPE", "IDENTIFIER", "EQUALS", "NUMBER", "STRING", "OPERATOR", "OPEN_PARENTHESIS", "CLOSED_PARENTHESIS", "OPEN_CURLIES", "CLOSED_CURLIES", "COMMENT", "END_OF_LINE", "END_OF_FILE", "ERROR"};
-char *nodeTypeNames[] = {"VARIABLE", "FUNCTION_CREATE", "FUNCTION_CALL", "END_OF_FILE_NODE"};
+
 
 char* readFile(const char* path) {
     FILE* file = fopen(path, "r");

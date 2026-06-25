@@ -128,7 +128,7 @@ void handleVariable(char *line, Node node){
 
 void handleTypes(char *line, Node node){
     for(int i = 0; i < node.valueCount; i++){
-        if(node.value[i]->tokenType.Type == STRING){
+        if(node.value[i]->tokenType.Type == TOKEN_STRING){
             handleString(line, node.value[i]->tokenType);
         }else{
             strcats(line, node.value[i]->tokenType.Value);
@@ -279,12 +279,12 @@ void handleKeywords(char* line, Node node){
 
 void handleNodeType(char* line, Node node){
     NodeType type = node.type;
-         if(type == FUNCTION_CALL)       { handleFunctionCall(line,   node); }
-    else if(type == VALUE)               { writeValue(line, node);           }
-    else if(type == DEFINE_VARIABLE)     { handleDefineVariable(line, node); }
-    else if(type == ASSIGN_VARIABLE)     { handleAssignVariable(line, node); }
-    else if(type == FUNCTION_CREATE)     { handleFunctionCreate(line, node); }
-    else if(type == KEYWORD_NODE)        { handleKeywords(line, node); }
+         if(type == NODE_FUNCTION_CALL)       { handleFunctionCall(line,   node); }
+    else if(type == NODE_VALUE)               { writeValue(line, node);           }
+    else if(type == NODE_DEFINE_VARIABLE)     { handleDefineVariable(line, node); }
+    else if(type == NODE_ASSIGN_VARIABLE)     { handleAssignVariable(line, node); }
+    else if(type == NODE_FUNCTION_CREATE)     { handleFunctionCreate(line, node); }
+    else if(type == NODE_KEYWORD)        { handleKeywords(line, node); }
 }
 
 
@@ -300,14 +300,14 @@ char* generateCode(Node nodes[]) {
         line[0] = '\0';
         NodeType type = nodes[i].type;
 
-        if (type == END_OF_FILE_NODE) {
+        if (type == NODE_END_OF_FILE) {
             //strcat(code, mainEnd);
             break;  // break, don't return yet
         }
 
         handleNodeType(line, nodes[i]);
 
-        if(type != FUNCTION_CREATE){
+        if(type != NODE_FUNCTION_CREATE){
             char sc[3] = {';', '\n', '\0'};
             strcat(line, sc);
         }else{

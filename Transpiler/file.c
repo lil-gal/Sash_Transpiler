@@ -6,8 +6,8 @@
 #include "methods.h"
 int add(int a,int b);
 void main(){
-int y =add(add( 1, 2), 2);
-println( y);
+int somethingwithareallylongtimethatyouprobablywouldneverevertypeisthisenoughihopesohahahahahha = 0;
+println( somethingwithareallylongtimethatyouprobablywouldneverevertypeisthisenoughihopesohahahahahha);
 }
 
 int add(int a,int b){

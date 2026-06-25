@@ -5,14 +5,14 @@
 #include "../Lexer/Lexer.h"
 
 typedef enum {
-    VALUE,
-    ASSIGN_VARIABLE,
-    DEFINE,
-    DEFINE_VARIABLE,
-    FUNCTION_CREATE,
-    FUNCTION_CALL,
-    KEYWORD_NODE,
-    END_OF_FILE_NODE
+    NODE_VALUE,
+    NODE_ASSIGN_VARIABLE,
+    NODE_DEFINE,
+    NODE_DEFINE_VARIABLE,
+    NODE_FUNCTION_CREATE,
+    NODE_FUNCTION_CALL,
+    NODE_KEYWORD,
+    NODE_END_OF_FILE
 } NodeType;
 
 typedef struct Node{
